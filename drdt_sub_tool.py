@@ -362,7 +362,7 @@ class CmdDef:
     """ A command definition for syntax commands """
     name : str
     args : list[str]
-    
+    apply : Callable[[Self, ET.Element], ET.Element] = lambda x : None
     def __init__(self, name : str, *args : CmdArgDef) -> None:
         self.name = name
         self.args = args
@@ -374,6 +374,25 @@ class CmdDef:
             txt = txt + CMD_ARG_OP.value + CMD_ARG_OP.value.join(arg_names) \
                   + CMD_ARG_CL.value
         return txt
+    
+    def get_arg(self, name : str) -> Any:
+        for arg in self.args:
+            if arg.name == name:
+                return arg.evaluate()
+
+class ReadCmd:
+    cmd_def: CmdDef
+    arg_list : list
+    def __init__(self, cmd_def : CmdDef, args : list[str|None]):
+        if len(args) > len(cmd_def.args):
+            raise ValueError(f"List of arguments for {cmd_def.name} is too long")
+        self.cmd_def = cmd_def
+        self.arg_list = list(len(args))
+        for i, arg in enumerate(args):
+            if arg is not None:
+                self.arg_list[i] = cmd_def.args[i].evaluate(arg)
+        
+#######################
 
 #######################
 # Command definitions #
@@ -429,6 +448,7 @@ class Parser:
 
     def _parse_line(self, line: str):
         pass
+        
     
     
 
