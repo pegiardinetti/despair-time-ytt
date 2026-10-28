@@ -184,6 +184,7 @@ class Pen:
         """
         Initialises a pen.
         Allowed parameters for properties are:
+            base (string-like): the pen this is a variant of
             bold (bool): Whether or not the text is bold
             italics (bool): Whether or not the text is italic
             under (bool): Whether or not the text is underlined
@@ -392,7 +393,11 @@ class ReadCmd:
             if arg is not None:
                 self.arg_list[i] = cmd_def.args[i].evaluate(arg)
         
-#######################
+###################
+# Command actions #
+###################
+
+class 
 
 #######################
 # Command definitions #
@@ -429,12 +434,58 @@ CMD_PEN_RESET = CmdDef("r")
 # THE PARSER #
 ##############
 
+class PenBase:
+    name : str
+    base : Pen
+    variants : list(Pen)
+
+class PenTracker:
+    pens : list(PenBase) = []
+    indices : dict(str, int) = dict()
+    
+    def append(self, item : PenVariant):
+        self.pens.append(item)
+        self.indices[item.name] = len(self.pens) - 1
+    
+    def get_id(self, name : str, var : int | None = None):
+        id = 1
+        pen_idx = self.indices[name]
+        for i in range(pen_idx):
+            id += len(self.pens[i]) + 1
+        if var is None:
+            return str(id)
+        else:
+            return str(id + var + 1)
+
+class PenRef:
+    name : str
+    tracker : PenTracker
+    variant : int | None
+    
+    def __init__(self, tracker : PenTracker, name : str, var : int | None = None):
+        self.tracker = tracker
+        self.name = name
+        self.var = variant
+        
+    def __repr__(self):
+        return self.tracker.get_id(self.name, self.var)
+        
+class ParserPhase(Enum):
+    HEAD
+    BODY
+
+class DocTracker:
+    doc : ET.ElementTree
+    pens : PenTracker
+    windows :
+    curr_pen : Pen
+    curr_win : Window
+    
+    
 class Parser:
     _curr : str
-    _doc : ET.ElementTree
-    _curr_pen : Pen
-    _curr_win : Window
-    
+    _doc : DocTracker
+    _cmds = dict(str, CmdDef)
 
     def __init__(self):
         pass
