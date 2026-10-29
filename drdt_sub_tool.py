@@ -397,7 +397,7 @@ class ReadCmd:
 # Command actions #
 ###################
 
-class 
+
 
 #######################
 # Command definitions #
@@ -434,16 +434,19 @@ CMD_PEN_RESET = CmdDef("r")
 # THE PARSER #
 ##############
 
+_escape_attrib = ET._escape_attrib
+ET._escape_attrib = lambda x : _escape_attrib(str(x))
+
 class PenBase:
     name : str
     base : Pen
-    variants : list(Pen)
+    variants : list[Pen]
 
 class PenTracker:
-    pens : list(PenBase) = []
-    indices : dict(str, int) = dict()
+    pens : list[PenBase] = []
+    indices : dict[str, int] = dict()
     
-    def append(self, item : PenVariant):
+    def append(self, item : PenBase):
         self.pens.append(item)
         self.indices[item.name] = len(self.pens) - 1
     
@@ -471,13 +474,13 @@ class PenRef:
         return self.tracker.get_id(self.name, self.var)
         
 class ParserPhase(Enum):
-    HEAD
-    BODY
+    HEAD = 0
+    BODY = 1
 
 class DocTracker:
     doc : ET.ElementTree
     pens : PenTracker
-    windows :
+    windows : list
     curr_pen : Pen
     curr_win : Window
     
@@ -485,7 +488,7 @@ class DocTracker:
 class Parser:
     _curr : str
     _doc : DocTracker
-    _cmds = dict(str, CmdDef)
+    _cmds = dict[str, CmdDef]
 
     def __init__(self):
         pass
